@@ -128,13 +128,24 @@ fn main() {
 }
 ```
 
+接下来就是rust项目本身,调用并测试c库的函数了
+
+一般项目库会有多数.h头文件
+
+为了方便集中处理
+
+需要将头文件包含在wrapper.h中
+```c
+#include "area_lib/area.h"
+```
+
 然后在rust的项目中执行
 ```
 cargo build
 ```
 
 会生成 bindings.rs 文件,可能会有多个
-```shellS
+```shell
 $ find ./ -name bindings.rs
 .//target/debug/build/rust_use_c_lib-42bfd16b522bb8e0/out/bindings.rs
 .//target/debug/build/rust_use_c_lib-08d1fa397eaf31a4/out/bindings.rs
@@ -142,5 +153,26 @@ $ find ./ -name bindings.rs
 
 到这里所有为 在rust中使用c库的前期准备都完成了
 
-接下里就是rust项目本身,调用并测试c库的函数了
+下一步编写rust调用c库的测试程序
 
+``` rust
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
+use std::env;
+
+fn main() {
+    unsafe {
+        let area:Area = Area {high: 2, widht: 3};
+
+        CalculationArea(area);
+    }
+}
+```
+
+最后执行测试代码
+```shell
+$cargo run
+    Finished dev [unoptimized + debuginfo] target(s) in 0.20s
+     Running `target/debug/rust_use_c_lib`
+ ====>>> Area is 6 print in c lib .
+```
